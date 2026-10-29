@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Banana Game</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Create account</h1>
+
+    <form id="register-form">
+      <label>Username
+        <input type="text" id="username" required minlength="3" maxlength="20">
+      </label>
+      <label>Email
+        <input type="email" id="email" required minlength="5" maxlength="254">
+      </label>
+      <label>Password
+        <input type="password" id="password" required minlength="8">
+      </label>
+      <button type="submit">Register</button>
+    </form>
+
+    <p id="message"></p>
+    <p>Already have an account? <a href="login.html">Log in</a></p>
+  </main>
+
+  <script src="js/auth.js"></script>
+</body>
+</html>

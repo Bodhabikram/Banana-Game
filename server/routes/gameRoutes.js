@@ -1,5 +1,5 @@
 const express = require('express');
-const requireLogin = require('../middleware/auth');
+const requireLogin = require('../middleware/requireLogin');
 const { fetchPuzzle } = require('../services/bananaService');
 const scoreModel = require('../models/scoreModel');
 
@@ -23,7 +23,6 @@ router.get('/puzzle', async (req, res) => {
     res.status(502).json({ error: 'Could not load a puzzle from the Banana API' });
   }
 });
-
 // POST /api/game/guess   body: { guess: number }
 router.post('/guess', (req, res) => {
   const guess = Number(req.body.guess);

@@ -1,0 +1,33 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #fff8dc;
+  margin: 0;
+}
+
+.card {
+  max-width: 360px;
+  margin: 80px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+.error { color: #b00020; }
+.success { color: #1b7f3b; }

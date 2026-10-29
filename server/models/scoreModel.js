@@ -1,5 +1,5 @@
 const db = require('../db/database');
-require('./userModel'); // makes sure the users table exists first
+require('./userModel'); 
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS scores (
