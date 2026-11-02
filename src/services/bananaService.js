@@ -1,9 +1,15 @@
+// AI-assisted, reviewed by me.
+
 const config = require('../config');
 
 const REQUEST_TIMEOUT_MS = 5000;
 
 async function fetchPuzzle() {
   const response = await fetch(config.bananaApiUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (compatible; BananaGame/1.0)',
+      Accept: 'application/json',
+    },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 

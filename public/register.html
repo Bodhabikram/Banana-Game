@@ -1,30 +1,68 @@
 <!DOCTYPE html>
+<!-- AI-assisted, reviewed by me. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register - Banana Game</title>
+  <title>Register - Banana Quest</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <main class="card">
-    <h1>Create account</h1>
+<body class="auth-body">
+  <div class="bg-decor" aria-hidden="true">
+    <span class="deco-banana deco-1">
+      <svg viewBox="0 0 120 120"><path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="currentColor"/></svg>
+    </span>
+    <span class="deco-banana deco-2">
+      <svg viewBox="0 0 120 120"><path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="currentColor"/></svg>
+    </span>
+  </div>
 
-    <form id="register-form">
-      <label>Username
-        <input type="text" id="username" required minlength="3" maxlength="20">
-      </label>
-      <label>Email
-        <input type="email" id="email" required minlength="5" maxlength="254">
-      </label>
-      <label>Password
-        <input type="password" id="password" required minlength="8">
-      </label>
-      <button type="submit">Register</button>
-    </form>
+  <main class="auth-shell">
+    <aside class="auth-art">
+      <svg class="banana-art" viewBox="0 0 120 120" aria-hidden="true">
+        <path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="#fff3b0" stroke="#b97700" stroke-width="4" stroke-linejoin="round"/>
+        <rect x="31" y="4" width="11" height="16" rx="5" fill="#8a5a00"/>
+        <path d="M38 9c8-8 19-8 25-3-7 1-14 4-18 10Z" fill="#43c463" stroke="#2e9e4d" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <h2>Join the hunt</h2>
+      <p>Create an account and start turning bunches of bananas into points.</p>
+      <ul class="art-points">
+        <li>Instant score tracking</li>
+        <li>Compete on the leaderboard</li>
+        <li>Free and always fruity</li>
+      </ul>
+    </aside>
 
-    <p id="message"></p>
-    <p>Already have an account? <a href="login.html">Log in</a></p>
+    <section class="auth-card">
+      <div class="auth-head">
+        <span class="eyebrow">Banana Quest</span>
+        <h1>Create account</h1>
+        <p class="subtitle">Your puzzle adventure starts here.</p>
+      </div>
+
+      <form id="register-form" class="auth-form">
+        <label for="username">Username</label>
+        <input type="text" id="username" required minlength="3" maxlength="20" autocomplete="username" placeholder="3-20 letters, numbers, underscore">
+
+        <label for="email">Email</label>
+        <input type="email" id="email" required minlength="5" maxlength="254" autocomplete="email" placeholder="you@example.com">
+
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input type="password" id="password" required minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
+          <button type="button" class="toggle-password" data-target="password" aria-label="Show password" aria-pressed="false">Show</button>
+        </div>
+
+        <button type="submit" class="primary-btn wide">Register</button>
+      </form>
+
+      <p id="message" class="message" aria-live="polite"></p>
+      <p class="auth-switch">Already have an account? <a href="login.html">Log in</a></p>
+    </section>
   </main>
 
   <script src="js/auth.js"></script>

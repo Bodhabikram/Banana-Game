@@ -1,7 +1,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
-const config = require('./config');
+const config = require('./config/config');
 const authRoutes = require('./routes/authRoutes');
 const gameRoutes = require('./routes/gameRoutes');
 const scoreRoutes = require('./routes/scoreRoutes');
@@ -11,7 +11,6 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '..', 'public')));
-
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });

@@ -1,3 +1,5 @@
+// AI-assisted, reviewed by me.
+
 const express = require('express');
 const requireLogin = require('../middleware/requireLogin');
 const scoreModel = require('../models/scoreModel');

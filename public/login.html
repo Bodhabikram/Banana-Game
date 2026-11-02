@@ -1,27 +1,65 @@
 <!DOCTYPE html>
+<!-- AI-assisted, reviewed by me. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Banana Game</title>
+  <title>Log in - Banana Quest</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-  <main class="card">
-    <h1>Log in</h1>
+<body class="auth-body">
+  <div class="bg-decor" aria-hidden="true">
+    <span class="deco-banana deco-1">
+      <svg viewBox="0 0 120 120"><path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="currentColor"/></svg>
+    </span>
+    <span class="deco-banana deco-2">
+      <svg viewBox="0 0 120 120"><path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="currentColor"/></svg>
+    </span>
+  </div>
 
-    <form id="login-form">
-      <label>Username or email
-        <input type="text" id="identifier" required>
-      </label>
-      <label>Password
-        <input type="password" id="password" required>
-      </label>
-      <button type="submit">Log in</button>
-    </form>
+  <main class="auth-shell">
+    <aside class="auth-art">
+      <svg class="banana-art" viewBox="0 0 120 120" aria-hidden="true">
+        <path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="#fff3b0" stroke="#b97700" stroke-width="4" stroke-linejoin="round"/>
+        <rect x="31" y="4" width="11" height="16" rx="5" fill="#8a5a00"/>
+        <path d="M38 9c8-8 19-8 25-3-7 1-14 4-18 10Z" fill="#43c463" stroke="#2e9e4d" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      <h2>Welcome back!</h2>
+      <p>The bananas missed you. Log in and keep your streak glowing.</p>
+      <ul class="art-points">
+        <li>Speed bonuses up to +5</li>
+        <li>Streak bonuses up to +10</li>
+        <li>A fresh puzzle every round</li>
+      </ul>
+    </aside>
 
-    <p id="message"></p>
-    <p>No account? <a href="register.html">Register</a></p>
+    <section class="auth-card">
+      <div class="auth-head">
+        <span class="eyebrow">Banana Quest</span>
+        <h1>Log in</h1>
+        <p class="subtitle">Pick up right where you left off.</p>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <label for="identifier">Username or email</label>
+        <input type="text" id="identifier" required autocomplete="username" placeholder="e.g. bananahunter">
+
+        <label for="password">Password</label>
+        <div class="password-field">
+          <input type="password" id="password" required autocomplete="current-password" placeholder="Enter your password">
+          <button type="button" class="toggle-password" data-target="password" aria-label="Show password" aria-pressed="false">Show</button>
+        </div>
+
+        <button type="submit" class="primary-btn wide">Log in</button>
+      </form>
+
+      <p id="message" class="message" aria-live="polite"></p>
+      <p class="auth-switch">No account? <a href="register.html">Register</a></p>
+    </section>
   </main>
 
   <script src="js/auth.js"></script>
