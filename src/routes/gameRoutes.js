@@ -3,6 +3,14 @@
 const express = require('express');
 const requireLogin = require('../middleware/requireLogin');
 const { fetchPuzzle } = require('../services/bananaService');
+const {
+  MAX_LIVES,
+  activePuzzles,
+  streaks,
+  getSession,
+  startSession,
+  clearUserState,
+} = require('../services/gameState');
 const scoreModel = require('../models/scoreModel');
 
 const router = express.Router();
@@ -16,11 +24,6 @@ const STREAK_BONUS_PER_LEVEL = 2;
 const MAX_STREAK_BONUS = 10;
 const HINT_PENALTY = 3;
 const PUZZLE_TTL_MS = 10 * 60 * 1000;
-
-// userId -> { solution, startedAt, hintUsed }
-const activePuzzles = new Map();
-// userId -> number of correct answers in a row
-const streaks = new Map();
 
 function getActivePuzzle(userId) {
   const puzzle = activePuzzles.get(userId);
@@ -44,11 +47,75 @@ setInterval(() => {
 
 router.use(requireLogin);
 
+// GET /api/game/state   what the menu needs to offer Resume / New Game
+router.get('/state', (req, res) => {
+  const session = getSession(req.user.id);
+  const puzzle = getActivePuzzle(req.user.id);
+
+  res.json({
+    status: session ? session.status : 'none',
+    lives: session ? session.lives : 0,
+    maxLives: session ? session.maxLives : MAX_LIVES,
+    score: scoreModel.getTotal(req.user.id),
+    best: scoreModel.getBest(req.user.id),
+    streak: streaks.get(req.user.id) || 0,
+    hasPuzzle: Boolean(puzzle),
+    elapsedMs: puzzle ? Date.now() - puzzle.startedAt : 0,
+    hintUsed: puzzle ? puzzle.hintUsed : false,
+  });
+});
+
+// POST /api/game/new   start a fresh run (score resets, best is kept)
+router.post('/new', (req, res) => {
+  clearUserState(req.user.id);
+  scoreModel.resetCurrentScore(req.user.id);
+  const session = startSession(req.user.id);
+
+  res.json({
+    status: session.status,
+    lives: session.lives,
+    maxLives: session.maxLives,
+    score: scoreModel.getTotal(req.user.id),
+    best: scoreModel.getBest(req.user.id),
+    streak: 0,
+  });
+});
+
+// POST /api/game/resume   continue the current run and current puzzle
+router.post('/resume', (req, res) => {
+  const session = getSession(req.user.id);
+
+  if (!session || session.status !== 'active') {
+    return res.status(404).json({ error: 'No game to resume. Start a new game.' });
+  }
+
+  const puzzle = getActivePuzzle(req.user.id);
+
+  res.json({
+    status: session.status,
+    lives: session.lives,
+    maxLives: session.maxLives,
+    score: scoreModel.getTotal(req.user.id),
+    best: scoreModel.getBest(req.user.id),
+    streak: streaks.get(req.user.id) || 0,
+    image: puzzle ? puzzle.image : null,
+    elapsedMs: puzzle ? Date.now() - puzzle.startedAt : 0,
+    hintUsed: puzzle ? puzzle.hintUsed : false,
+  });
+});
+
 // GET /api/game/puzzle
 router.get('/puzzle', async (req, res) => {
+  const session = getSession(req.user.id);
+
+  if (!session || session.status !== 'active') {
+    return res.status(409).json({ error: 'No active game. Start or resume a game.' });
+  }
+
   try {
     const { image, solution } = await fetchPuzzle();
     activePuzzles.set(req.user.id, {
+      image,
       solution,
       startedAt: Date.now(),
       hintUsed: false,
@@ -83,6 +150,12 @@ router.post('/guess', (req, res) => {
     return res.status(400).json({ error: 'Guess must be a whole number' });
   }
 
+  const session = getSession(req.user.id);
+
+  if (!session || session.status !== 'active') {
+    return res.status(400).json({ error: 'No active game. Start or resume a game.' });
+  }
+
   const puzzle = getActivePuzzle(req.user.id);
 
   if (!puzzle) {
@@ -98,6 +171,7 @@ router.post('/guess', (req, res) => {
   let points = 0;
   let speedBonus = 0;
   let streakBonus = 0;
+  let gameOver = false;
 
   if (correct) {
     streak += 1;
@@ -119,6 +193,13 @@ router.post('/guess', (req, res) => {
     }
   } else {
     streak = 0;
+    session.lives -= 1;
+
+    if (session.lives <= 0) {
+      session.lives = 0;
+      session.status = 'over';
+      gameOver = true;
+    }
   }
 
   streaks.set(req.user.id, streak);
@@ -127,8 +208,13 @@ router.post('/guess', (req, res) => {
     correct,
     solution: puzzle.solution,
     total: scoreModel.getTotal(req.user.id),
+    best: scoreModel.getBest(req.user.id),
     points,
     streak,
+    lives: session.lives,
+    maxLives: session.maxLives,
+    gameOver,
+    status: session.status,
     speedBonus,
     streakBonus,
     hinted: puzzle.hintUsed,

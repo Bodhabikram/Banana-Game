@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 const ui = {
   currentUser: null,
   audio: null,
@@ -27,6 +25,15 @@ const ui = {
     element.classList.add('bump');
   },
 
+  best(value) {
+    const element = document.getElementById('best');
+    if (!element || element.textContent === String(value)) return;
+    element.textContent = value;
+    element.classList.remove('bump');
+    void element.offsetWidth;
+    element.classList.add('bump');
+  },
+
   streak(value) {
     const element = document.getElementById('streak');
     if (element.textContent === String(value)) return;
@@ -34,6 +41,54 @@ const ui = {
     element.classList.remove('bump');
     void element.offsetWidth;
     element.classList.add('bump');
+  },
+
+  lives(value, maxLives) {
+    const element = document.getElementById('lives');
+    if (!element) return;
+
+    if (element.textContent !== String(value)) {
+      element.textContent = value;
+      element.classList.remove('bump');
+      void element.offsetWidth;
+      element.classList.add('bump');
+    }
+
+    const chip = element.closest('.lives-chip');
+    if (chip) chip.classList.toggle('danger', value <= 1);
+  },
+
+  showStartMenu({ canResume = false } = {}) {
+    const menu = document.getElementById('game-menu');
+    const resumeButton = document.getElementById('resume-btn');
+    const newButton = document.getElementById('new-game-btn');
+
+    menu.hidden = false;
+    document.getElementById('menu-start').hidden = false;
+    document.getElementById('menu-over').hidden = true;
+
+    resumeButton.hidden = !canResume;
+    newButton.classList.toggle('primary-btn', !canResume);
+    newButton.classList.toggle('secondary-btn', canResume);
+
+    document.getElementById('menu-title').textContent = canResume
+      ? 'Run in progress'
+      : 'Ready to play?';
+    document.getElementById('menu-subtitle').textContent = canResume
+      ? 'Resume your run, or start fresh and reset the current score.'
+      : 'Solve puzzles, keep your streak, and protect your three lives.';
+  },
+
+  showGameOver(score, best) {
+    document.getElementById('game-menu').hidden = false;
+    document.getElementById('menu-start').hidden = true;
+    document.getElementById('menu-over').hidden = false;
+    document.getElementById('final-score').textContent = score;
+    document.getElementById('final-best').textContent = best;
+  },
+
+  hideMenu() {
+    document.getElementById('game-menu').hidden = true;
   },
 
   timer(text, state) {
@@ -115,9 +170,21 @@ const ui = {
   },
 
   setBusy(isBusy) {
-    document.getElementById('guess-btn').disabled = isBusy;
-    document.getElementById('new-puzzle-btn').disabled = isBusy;
-    document.getElementById('logout-btn').disabled = isBusy;
+    const buttons = [
+      'guess-btn',
+      'new-puzzle-btn',
+      'logout-btn',
+      'open-menu-btn',
+      'new-game-btn',
+      'resume-btn',
+      'play-again-btn',
+      'menu-btn',
+    ];
+
+    buttons.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) element.disabled = isBusy;
+    });
   },
 
   shake() {
@@ -155,7 +222,13 @@ const ui = {
       const gain = context.createGain();
 
       const notes =
-        type === 'correct' ? [523, 659, 784] : type === 'hint' ? [440] : [220, 175];
+        type === 'correct'
+          ? [523, 659, 784]
+          : type === 'hint'
+            ? [440]
+            : type === 'gameover'
+              ? [392, 330, 262, 196]
+              : [220, 175];
 
       oscillator.type = 'sine';
       notes.forEach((frequency, index) => {

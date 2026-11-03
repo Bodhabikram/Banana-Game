@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 async function request(url, options = {}) {
   const response = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
@@ -22,6 +20,9 @@ async function request(url, options = {}) {
 
 const api = {
   getMe: () => request('/api/auth/me'),
+  getGameState: () => request('/api/game/state'),
+  newGame: () => request('/api/game/new', { method: 'POST' }),
+  resumeGame: () => request('/api/game/resume', { method: 'POST' }),
   getPuzzle: () => request('/api/game/puzzle'),
   getHint: () => request('/api/game/hint'),
   submitGuess: (guess) =>

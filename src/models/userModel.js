@@ -12,6 +12,11 @@ db.exec(`
   )
 `);
 
+const userColumns = db.pragma('table_info(users)');
+if (!userColumns.some((column) => column.name === 'best_score')) {
+  db.exec('ALTER TABLE users ADD COLUMN best_score INTEGER NOT NULL DEFAULT 0');
+}
+
 const MIN_EMAIL_LENGTH = 5;
 const MAX_EMAIL_LENGTH = 254;
 
@@ -40,7 +45,9 @@ function findByEmail(email) {
 }
 
 function findById(id) {
-  return db.prepare('SELECT id, username, email, created_at FROM users WHERE id = ?').get(id);
+  return db
+    .prepare('SELECT id, username, email, best_score, created_at FROM users WHERE id = ?')
+    .get(id);
 }
 
 module.exports = { createUser, findByUsername, findByEmail, findById, isValidEmail };

@@ -10,6 +10,7 @@ const router = express.Router();
 router.get('/', requireLogin, (req, res) => {
   res.json({
     mine: scoreModel.getTotal(req.user.id),
+    best: scoreModel.getBest(req.user.id),
     leaderboard: scoreModel.getLeaderboard(10),
   });
 });

@@ -13,15 +13,14 @@ db.exec(`
   )
 `);
 
-function addPoints(userId, points) {
-  if (!Number.isInteger(points) || points <= 0) {
-    throw new Error('Points must be a positive whole number');
-  }
-
-  return db
-    .prepare('INSERT INTO scores (user_id, score) VALUES (?, ?)')
-    .run(userId, points);
-}
+// Keep best_score in sync for databases created before the column existed.
+db.exec(`
+  UPDATE users
+  SET best_score = (
+    SELECT COALESCE(SUM(score), 0) FROM scores WHERE scores.user_id = users.id
+  )
+  WHERE best_score = 0
+`);
 
 function getTotal(userId) {
   return db
@@ -29,17 +28,48 @@ function getTotal(userId) {
     .get(userId).total;
 }
 
+function getBest(userId) {
+  const row = db.prepare('SELECT best_score FROM users WHERE id = ?').get(userId);
+  return row ? row.best_score : 0;
+}
+
+function syncBestScore(userId) {
+  const total = getTotal(userId);
+  db.prepare('UPDATE users SET best_score = ? WHERE id = ? AND best_score < ?').run(
+    total,
+    userId,
+    total
+  );
+}
+
+function addPoints(userId, points) {
+  if (!Number.isInteger(points) || points <= 0) {
+    throw new Error('Points must be a positive whole number');
+  }
+
+  const result = db
+    .prepare('INSERT INTO scores (user_id, score) VALUES (?, ?)')
+    .run(userId, points);
+
+  syncBestScore(userId);
+  return result;
+}
+
+// Called on logout: the running score returns to zero, the personal best stays.
+function resetCurrentScore(userId) {
+  return db.prepare('DELETE FROM scores WHERE user_id = ?').run(userId);
+}
+
 function getLeaderboard(limit = 10) {
   return db
     .prepare(`
-      SELECT u.username, SUM(s.score) AS total
-      FROM scores s
-      JOIN users u ON u.id = s.user_id
-      GROUP BY s.user_id
-      ORDER BY total DESC
+      SELECT username, best_score AS total
+      FROM users
+      WHERE best_score > 0
+      ORDER BY best_score DESC, username COLLATE NOCASE ASC
       LIMIT ?
     `)
     .all(limit);
 }
 
-module.exports = { addPoints, getTotal, getLeaderboard };
+module.exports = { addPoints, getTotal, getBest, getLeaderboard, resetCurrentScore };

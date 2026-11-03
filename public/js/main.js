@@ -3,6 +3,7 @@
 let isBusy = false;
 let timerId = null;
 let puzzleStartedAt = 0;
+let sessionStatus = 'none';
 
 function stopTimer() {
   if (timerId) {
@@ -24,11 +25,19 @@ function updateTimer() {
   }
 }
 
-function startTimer() {
+function startTimer(elapsedMs = 0) {
   stopTimer();
-  puzzleStartedAt = Date.now();
+  puzzleStartedAt = Date.now() - elapsedMs;
   updateTimer();
   timerId = setInterval(updateTimer, 250);
+}
+
+function applyState(state) {
+  sessionStatus = state.status;
+  ui.total(state.score);
+  ui.best(state.best);
+  ui.streak(state.streak);
+  ui.lives(state.status === 'none' ? state.maxLives : state.lives, state.maxLives);
 }
 
 async function loadPuzzle(clearMessage = true) {
@@ -42,7 +51,7 @@ async function loadPuzzle(clearMessage = true) {
   try {
     const { image } = await api.getPuzzle();
     ui.puzzle(image);
-    startTimer();
+    startTimer(0);
   } catch (err) {
     ui.message(err.message, true);
   } finally {
@@ -52,11 +61,82 @@ async function loadPuzzle(clearMessage = true) {
 
 async function loadScores() {
   try {
-    const { mine, leaderboard } = await api.getScores();
+    const { mine, best, leaderboard } = await api.getScores();
     ui.total(mine);
+    ui.best(best);
     ui.leaderboard(leaderboard);
   } catch (err) {
     ui.message(err.message, true);
+  }
+}
+
+async function refreshGameState() {
+  const state = await api.getGameState();
+  applyState(state);
+
+  if (state.status === 'active') {
+    ui.showStartMenu({ canResume: true });
+  } else if (state.status === 'over') {
+    ui.showGameOver(state.score, state.best);
+  } else {
+    ui.showStartMenu({ canResume: false });
+  }
+}
+
+async function startNewGame() {
+  if (isBusy) return;
+
+  isBusy = true;
+  ui.setBusy(true);
+
+  try {
+    const state = await api.newGame();
+    applyState(state);
+    ui.hideMenu();
+    ui.clearGuess();
+    ui.message('');
+    ui.resetHint();
+    ui.timer('Waiting for a puzzle', 'slow');
+
+    await loadPuzzle();
+    await loadScores();
+  } catch (err) {
+    ui.message(err.message, true);
+  } finally {
+    isBusy = false;
+    ui.setBusy(false);
+  }
+}
+
+async function resumeGame() {
+  if (isBusy) return;
+
+  isBusy = true;
+  ui.setBusy(true);
+
+  try {
+    const state = await api.resumeGame();
+    applyState(state);
+    ui.hideMenu();
+    ui.clearGuess();
+    ui.message('');
+
+    if (state.image) {
+      ui.puzzleLoading(false);
+      ui.puzzle(state.image);
+      if (state.hintUsed) ui.hintUsed();
+      else ui.resetHint();
+      startTimer(state.elapsedMs || 0);
+    } else {
+      await loadPuzzle();
+    }
+
+    await loadScores();
+  } catch (err) {
+    ui.message(err.message, true);
+  } finally {
+    isBusy = false;
+    ui.setBusy(false);
   }
 }
 
@@ -78,7 +158,9 @@ async function handleGuess(rawValue) {
     const result = await api.submitGuess(guess);
     ui.clearGuess();
     ui.total(result.total);
+    ui.best(result.best);
     ui.streak(result.streak);
+    ui.lives(result.lives, result.maxLives);
     stopTimer();
 
     if (result.correct) {
@@ -91,13 +173,27 @@ async function handleGuess(rawValue) {
       ui.message(`Correct! +${result.points} points${detail}`, false);
       ui.confetti();
       ui.playSound('correct');
-    } else {
+
+      await Promise.all([loadPuzzle(false), loadScores()]);
+    } else if (result.gameOver) {
+      sessionStatus = 'over';
       ui.message(`Not quite. The answer was ${result.solution}.`, true);
       ui.shake();
+      ui.playSound('gameover');
+      ui.showGameOver(result.total, result.best);
+      await loadScores();
+    } else {
+      ui.message(
+        `Not quite. The answer was ${result.solution}. ${result.lives} ${
+          result.lives === 1 ? 'life' : 'lives'
+        } left.`,
+        true
+      );
+      ui.shake();
       ui.playSound('wrong');
-    }
 
-    await Promise.all([loadPuzzle(false), loadScores()]);
+      await Promise.all([loadPuzzle(false), loadScores()]);
+    }
   } catch (err) {
     ui.message(err.message, true);
   } finally {
@@ -131,6 +227,16 @@ async function handleNewPuzzle() {
   ui.setBusy(false);
 }
 
+function openMenu() {
+  if (isBusy) return;
+  stopTimer();
+  ui.showStartMenu({ canResume: sessionStatus === 'active' });
+}
+
+function mainMenu() {
+  ui.showStartMenu({ canResume: false });
+}
+
 async function handleLogout() {
   try {
     await api.logout();
@@ -152,9 +258,17 @@ async function init() {
     onHint: handleHint,
     onNewPuzzle: handleNewPuzzle,
     onLogout: handleLogout,
+    onNewGame: startNewGame,
+    onResume: resumeGame,
+    onOpenMenu: openMenu,
+    onMainMenu: mainMenu,
   });
 
-  await Promise.all([loadPuzzle(), loadScores()]);
+  try {
+    await Promise.all([refreshGameState(), loadScores()]);
+  } catch (err) {
+    ui.message(err.message, true);
+  }
 }
 
 init();

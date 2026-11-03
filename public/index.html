@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- AI-assisted, reviewed by me. -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -56,6 +55,16 @@
         </span>
       </div>
 
+      <div class="stat-chip best-chip">
+        <span class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M8 3h8v4a4 4 0 0 1-8 0V3Z" fill="#F0A500"/><path d="M8 4H5a3 3 0 0 0 3 3M16 4h3a3 3 0 0 1-3 3" fill="none" stroke="#B97700" stroke-width="1.6" stroke-linecap="round"/><path d="M12 11v4M9 19h6M10 15h4l1 4H9l1-4Z" fill="#B97700"/></svg>
+        </span>
+        <span class="stat-meta">
+          <span class="chip-label">Best</span>
+          <strong id="best">0</strong>
+        </span>
+      </div>
+
       <div class="stat-chip streak-chip">
         <span class="stat-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 2c.5 3-1.6 4.6-1.6 7.2 0 1.4 1 2.4 2.2 2.4 1.4 0 2.2-1.2 2.1-2.7 2.2 1.7 3.5 4.2 3.5 6.8A6.2 6.2 0 0 1 12 22a6.2 6.2 0 0 1-6.2-6.3C5.8 10.9 10 7.4 12 2Z" fill="#FF8A3D"/></svg>
@@ -63,6 +72,16 @@
         <span class="stat-meta">
           <span class="chip-label">Streak</span>
           <strong id="streak">0</strong>
+        </span>
+      </div>
+
+      <div class="stat-chip lives-chip">
+        <span class="stat-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 20.5S3.5 15 3.5 9.2A4.7 4.7 0 0 1 12 5.9a4.7 4.7 0 0 1 8.5 3.3C20.5 15 12 20.5 12 20.5Z" fill="#E91E63"/></svg>
+        </span>
+        <span class="stat-meta">
+          <span class="chip-label">Lives</span>
+          <strong id="lives">3</strong>
         </span>
       </div>
 
@@ -99,6 +118,7 @@
         <div class="actions">
           <button type="button" id="hint-btn" class="secondary-btn">Hint (-3 pts)</button>
           <button type="button" id="new-puzzle-btn" class="secondary-btn">New puzzle</button>
+          <button type="button" id="open-menu-btn" class="secondary-btn">Menu</button>
         </div>
       </form>
 
@@ -110,7 +130,7 @@
       <section class="card leaderboard-card">
         <div class="card-head compact">
           <h2>Leaderboard</h2>
-          <p class="subtitle">Top banana catchers</p>
+          <p class="subtitle">Top personal bests</p>
         </div>
         <ol id="leaderboard"></ol>
       </section>
@@ -121,7 +141,9 @@
           <li><span class="tip-bullet">1</span> Work out the number the banana puzzle is asking for.</li>
           <li><span class="tip-bullet">2</span> Answer within 10 seconds for a +5 speed bonus.</li>
           <li><span class="tip-bullet">3</span> Chain correct answers to grow your streak bonus.</li>
-          <li><span class="tip-bullet">4</span> A hint costs 3 points, so use it wisely.</li>
+          <li><span class="tip-bullet">4</span> A wrong answer costs one of your three lives. Lose all three and it is game over.</li>
+          <li><span class="tip-bullet">5</span> A hint costs 3 points, so use it wisely.</li>
+          <li><span class="tip-bullet">6</span> Every login starts your score at zero, but your personal best is saved.</li>
         </ul>
       </section>
     </aside>
@@ -130,6 +152,45 @@
   <footer class="site-footer">
     Fresh puzzles served by the <a href="http://marcconrad.com/uob/banana/api.php" target="_blank" rel="noopener noreferrer">Banana API</a>.
   </footer>
+
+  <div id="game-menu" class="game-menu">
+    <section class="menu-card" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <div id="menu-start" class="menu-screen">
+        <svg class="menu-art" viewBox="0 0 120 120" aria-hidden="true">
+          <path d="M35 14c0 46 24 72 67 72 6 0 8-7 2-8-30-5-51-28-53-64-1-7-16-7-16 0Z" fill="#fff3b0" stroke="#b97700" stroke-width="4" stroke-linejoin="round"/>
+          <rect x="31" y="4" width="11" height="16" rx="5" fill="#8a5a00"/>
+          <path d="M38 9c8-8 19-8 25-3-7 1-14 4-18 10Z" fill="#43c463" stroke="#2e9e4d" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        <span class="eyebrow">Banana Quest</span>
+        <h2 id="menu-title">Ready to play?</h2>
+        <p id="menu-subtitle" class="subtitle">Solve puzzles, keep your streak, and protect your three lives.</p>
+        <div class="menu-actions">
+          <button type="button" id="resume-btn" class="primary-btn" hidden>Resume Game</button>
+          <button type="button" id="new-game-btn" class="secondary-btn">New Game</button>
+        </div>
+      </div>
+
+      <div id="menu-over" class="menu-screen" hidden>
+        <span class="eyebrow">Run complete</span>
+        <h2>Game Over</h2>
+        <p class="subtitle">You ran out of lives. Your personal best is safe.</p>
+        <div class="final-stats">
+          <div>
+            <span>Final score</span>
+            <strong id="final-score">0</strong>
+          </div>
+          <div>
+            <span>Personal best</span>
+            <strong id="final-best">0</strong>
+          </div>
+        </div>
+        <div class="menu-actions">
+          <button type="button" id="play-again-btn" class="primary-btn">Play Again</button>
+          <button type="button" id="menu-btn" class="secondary-btn">Main Menu</button>
+        </div>
+      </div>
+    </section>
+  </div>
 
   <script src="js/api.js"></script>
   <script src="js/ui.js"></script>

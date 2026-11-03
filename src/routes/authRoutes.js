@@ -7,6 +7,8 @@ const config = require('../config');
 const requireLogin = require('../middleware/requireLogin');
 const rateLimit = require('../middleware/rateLimit');
 const userModel = require('../models/userModel');
+const scoreModel = require('../models/scoreModel');
+const { clearUserState } = require('../services/gameState');
 
 const router = express.Router();
 
@@ -81,6 +83,11 @@ router.post('/login', authLimiter, async (req, res) => {
     return res.status(401).json({ error: 'Invalid username/email or password' });
   }
 
+  // Every login starts a fresh run: the running score resets to zero,
+  // while the personal best (best_score) is kept.
+  clearUserState(user.id);
+  scoreModel.resetCurrentScore(user.id);
+
   const token = jwt.sign(
     { id: user.id, username: user.username },
     config.jwtSecret,
@@ -97,7 +104,20 @@ router.post('/login', authLimiter, async (req, res) => {
 });
 
 // POST /api/auth/logout
+// Resets the running score to zero but keeps the user's personal best.
 router.post('/logout', (req, res) => {
+  const token = req.cookies && req.cookies.token;
+
+  if (token) {
+    try {
+      const { id } = jwt.verify(token, config.jwtSecret);
+      clearUserState(id);
+      scoreModel.resetCurrentScore(id);
+    } catch (err) {
+      // Invalid or expired token: there is no active score to reset.
+    }
+  }
+
   res.clearCookie('token', COOKIE_OPTIONS);
   res.json({ message: 'Logged out' });
 });

@@ -1,6 +1,4 @@
-// AI-assisted, reviewed by me.
 // Event-driven code for the register and login pages
-
 async function sendAuth(endpoint, body, button, busyText) {
   if (button) {
     button.disabled = true;
