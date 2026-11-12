@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 

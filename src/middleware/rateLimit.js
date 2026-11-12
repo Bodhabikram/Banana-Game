@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 function rateLimit({ windowMs, max, message }) {
   const hits = new Map();
 

@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 require('dotenv').config();
 
 const config = {

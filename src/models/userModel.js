@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 const db = require('../db/database');
 
 db.exec(`

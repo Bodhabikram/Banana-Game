@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 const Database = require('better-sqlite3');
 const path = require('path');
 

@@ -1,5 +1,3 @@
-// AI-assisted, reviewed by me.
-
 const config = require('../config');
 
 const REQUEST_TIMEOUT_MS = 5000;
